@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Minecraft Activity</title>
+    <script src="https://cdn.jsdelivr.net/npm/@discord/embedded-app-sdk@latest/dist/index.js"></script>
+    <style>
+        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #1a1a1a; font-family: 'Helvetica', sans-serif; }
+        #promo-overlay {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: rgba(88, 101, 242, 0.95); padding: 10px 20px; border-radius: 25px;
+            color: white; z-index: 1000; display: flex; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        #promo-overlay a { color: #fff; text-decoration: underline; margin-left: 10px; font-weight: bold; }
+        iframe { width: 100%; height: 100%; border: none; }
+    </style>
+</head>
+<body>
+
+    <div id="promo-overlay">
+        Join our International Community for Updates! 
+        <a href="https://discord.gg/YOUR_INVITE_CODE" target="_blank">Join Support Server</a>
+    </div>
+
+    <iframe src="https://classic.minecraft.net" allow="autoplay; encrypted-media"></iframe>
+
+    <script>
+        // Initialize the SDK with your Client ID
+        const discordSdk = new discordSdk.DiscordSDK("YOUR_CLIENT_ID");
+
+        async function init() {
+            await discordSdk.ready();
+            console.log("Activity is ready for international users.");
+        }
+
+        init().catch(console.error);
+    </script>
+</body>
+</html>
