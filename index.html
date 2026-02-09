@@ -11,9 +11,10 @@
             position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
             background: rgba(88, 101, 242, 0.95); padding: 10px 20px; border-radius: 25px;
             color: white; z-index: 1000; display: flex; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            white-space: nowrap;
         }
         #promo-overlay a { color: #fff; text-decoration: underline; margin-left: 10px; font-weight: bold; }
-        iframe { width: 100%; height: 100%; border: none; }
+        iframe { width: 100%; height: 100%; border: none; background: #000; }
     </style>
 </head>
 <body>
@@ -23,15 +24,15 @@
         <a href="https://discord.gg/WYSYNVXbNT" target="_blank">Join Support Server</a>
     </div>
 
-    <iframe src="https://classic.minecraft.net" allow="autoplay; encrypted-media"></iframe>
+    <iframe src="/minecraft" allow="autoplay; encrypted-media"></iframe>
 
     <script>
-        // Initialize the SDK with your Client ID
-        const discordSdk = new discordSdk.DiscordSDK("YOUR_CLIENT_ID");
+        // Ersetze "YOUR_CLIENT_ID" mit der ID aus deinem Dashboard
+        const discordSdk = new window.discordSdk.DiscordSDK("1437203189651865643");
 
         async function init() {
             await discordSdk.ready();
-            console.log("Activity is ready for international users.");
+            console.log("Activity is ready!");
         }
 
         init().catch(console.error);
