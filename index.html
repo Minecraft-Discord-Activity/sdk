@@ -1,37 +1,64 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Minecraft Activity</title>
     <script src="https://cdn.jsdelivr.net/npm/@discord/embedded-app-sdk@latest/dist/index.js"></script>
     <style>
-        html, body { background: #000; margin: 0; padding: 0; overflow: hidden; height: 100%; width: 100%; color: white; font-family: 'Helvetica', sans-serif; }
+        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000; font-family: 'Helvetica', sans-serif; }
         
+        /* Das Pop-Up oben */
         #promo-overlay {
-            position: fixed; top: 15px; left: 50%; transform: translateX(-50%);
-            background: rgba(88, 101, 242, 0.95); padding: 8px 18px; border-radius: 12px;
-            z-index: 10000; display: flex; align-items: center; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.6); font-size: 14px; border: 1px solid rgba(255, 255, 255, 0.3);
+            position: absolute; 
+            top: 15px; 
+            left: 50%; 
+            transform: translateX(-50%);
+            background: rgba(88, 101, 242, 0.95); /* Etwas kräftiger für bessere Sichtbarkeit */
+            padding: 10px 20px; 
+            border-radius: 12px;
+            color: white; 
+            z-index: 9999; /* Sehr hoch, damit es über allem liegt */
+            display: flex; 
+            align-items: center; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+            font-size: 14px;
+            white-space: nowrap;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            cursor: default;
         }
 
-        .join-link { color: #fff; text-decoration: underline; margin-left: 10px; font-weight: bold; cursor: pointer; background: none; border: none; padding: 0; font-size: 14px; }
-        .giveaway-badge { background: #ffcc00; color: #000; padding: 2px 8px; border-radius: 4px; font-weight: bold; margin-right: 12px; font-size: 11px; text-transform: uppercase; }
-
-        #start-screen {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            background: #111; z-index: 5000; text-align: center;
+        /* Der klickbare Link/Button */
+        .join-link { 
+            color: #fff; 
+            text-decoration: underline; 
+            margin-left: 10px; 
+            font-weight: bold; 
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+            font-size: 14px;
         }
 
-        #start-button {
-            padding: 18px 40px; font-size: 22px; background: #5865F2; color: white;
-            border: none; border-radius: 8px; cursor: pointer; font-weight: bold;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: transform 0.2s;
+        .join-link:hover {
+            color: #dbdee1;
         }
 
-        #start-button:active { transform: scale(0.95); }
+        /* Das Giveaway-Highlight */
+        .giveaway-badge {
+            background: #ffcc00;
+            color: #000;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            margin-right: 12px;
+            font-size: 11px;
+            text-transform: uppercase;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
 
-        #mc-frame { width: 100%; height: 100%; border: none; display: none; background: #000; }
+        iframe { width: 100%; height: 100%; border: none; z-index: 1; }
     </style>
 </head>
 <body>
@@ -42,57 +69,35 @@
         <button class="join-link" onclick="openSupportServer()">Join Support Server</button>
     </div>
 
-    <div id="start-screen">
-        <button id="start-button">Lade Minecraft...</button>
-        <p id="status-text" style="margin-top: 15px; color: #888;">Initialisiere Discord SDK...</p>
-    </div>
-
-    <iframe id="mc-frame" allow="autoplay; encrypted-media; keyboard-lock; pointer-lock; gamepad; xr-standard" allowfullscreen></iframe>
+    <iframe src="/minecraft" allow="autoplay; encrypted-media"></iframe>
 
     <script>
+        // Initialisierung mit deiner ID
         const discordSdk = new window.discordSdk.DiscordSDK("1437203189651865643");
-        const startBtn = document.getElementById('start-button');
-        const statusText = document.getElementById('status-text');
-        const frame = document.getElementById('mc-frame');
 
         async function init() {
             try {
                 await discordSdk.ready();
-                startBtn.innerText = "Start Minecraft";
-                statusText.innerText = "Bereit zum Spielen!";
-                
-                startBtn.onclick = () => {
-                    document.getElementById('start-screen').style.display = 'none';
-                    frame.style.display = 'block';
-                    // Source erst hier setzen, um Browser-Blockaden zu umgehen
-                    frame.src = "/minecraft"; 
-                    
-                    // Fokus erzwingen
-                    setTimeout(() => frame.focus(), 500);
-                };
+                console.log("Discord Activity SDK ready.");
             } catch (e) {
-                statusText.innerText = "SDK Fehler oder nicht in Discord.";
-                // Fallback für Browser-Test
-                startBtn.innerText = "Trotzdem starten";
-                startBtn.onclick = () => {
-                    document.getElementById('start-screen').style.display = 'none';
-                    frame.style.display = 'block';
-                    frame.src = "/minecraft";
-                };
+                console.error("SDK Auth failed or not in Discord:", e);
             }
         }
 
+        // Die wichtige Funktion für Discord-Links
         function openSupportServer() {
-            discordSdk.commands.openExternalLink({ url: 'https://discord.gg/WYSYNVXbNT' })
-                .catch(() => window.open('https://discord.gg/WYSYNVXbNT', '_blank'));
+            const inviteUrl = 'https://discord.gg/WYSYNVXbNT';
+            
+            // Versucht den Link über das SDK zu öffnen (erforderlich für Activities)
+            discordSdk.commands.openExternalLink({
+                url: inviteUrl
+            }).catch(err => {
+                console.error("Could not open link via SDK, trying fallback:", err);
+                window.open(inviteUrl, '_blank');
+            });
         }
 
         init();
-
-        // Klick-Fokus Helper
-        window.addEventListener('click', () => {
-            if(frame.style.display === 'block') frame.focus();
-        });
     </script>
 </body>
 </html>
