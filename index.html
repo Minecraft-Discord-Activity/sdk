@@ -2,12 +2,10 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <meta name="darkreader-lock">
     <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover'>
     <script src="https://cdn.jsdelivr.net/npm/@discord/embedded-app-sdk@latest/dist/index.js"></script>
-    
     <style>
-        html, body { background: black; margin: 0; padding: 0; overflow: hidden; height: 100%; width: 100%; color: white; font-family: sans-serif; }
+        html, body { background: #000; margin: 0; padding: 0; overflow: hidden; height: 100%; width: 100%; color: white; font-family: 'Helvetica', sans-serif; }
         
         #promo-overlay {
             position: fixed; top: 15px; left: 50%; transform: translateX(-50%);
@@ -19,19 +17,21 @@
         .join-link { color: #fff; text-decoration: underline; margin-left: 10px; font-weight: bold; cursor: pointer; background: none; border: none; padding: 0; font-size: 14px; }
         .giveaway-badge { background: #ffcc00; color: #000; padding: 2px 8px; border-radius: 4px; font-weight: bold; margin-right: 12px; font-size: 11px; text-transform: uppercase; }
 
-        /* Start-Bildschirm um WebGL/Keyboard zu aktivieren */
         #start-screen {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            background: #111; z-index: 5000;
+            background: #111; z-index: 5000; text-align: center;
         }
 
         #start-button {
-            padding: 15px 30px; font-size: 20px; background: #5865F2; color: white;
+            padding: 18px 40px; font-size: 22px; background: #5865F2; color: white;
             border: none; border-radius: 8px; cursor: pointer; font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: transform 0.2s;
         }
 
-        iframe { width: 100%; height: 100%; border: none; display: none; }
+        #start-button:active { transform: scale(0.95); }
+
+        #mc-frame { width: 100%; height: 100%; border: none; display: none; background: #000; }
     </style>
 </head>
 <body>
@@ -43,30 +43,43 @@
     </div>
 
     <div id="start-screen">
-        <button id="start-button" onclick="startGame()">Click to Launch Minecraft</button>
-        <p style="margin-top: 15px; color: #aaa;">Enables WebGL & Keyboard Support</p>
+        <button id="start-button">Lade Minecraft...</button>
+        <p id="status-text" style="margin-top: 15px; color: #888;">Initialisiere Discord SDK...</p>
     </div>
 
-    <iframe id="mc-frame" src="/minecraft" allow="autoplay; encrypted-media; keyboard-lock; pointer-lock; gamepad; xr-standard" allowfullscreen></iframe>
+    <iframe id="mc-frame" allow="autoplay; encrypted-media; keyboard-lock; pointer-lock; gamepad; xr-standard" allowfullscreen></iframe>
 
     <script>
         const discordSdk = new window.discordSdk.DiscordSDK("1437203189651865643");
+        const startBtn = document.getElementById('start-button');
+        const statusText = document.getElementById('status-text');
+        const frame = document.getElementById('mc-frame');
 
-        async function setupDiscord() {
-            try { await discordSdk.ready(); } catch (e) { console.warn("SDK failed."); }
-        }
-
-        function startGame() {
-            // Verstecke Startbildschirm, zeige Iframe
-            document.getElementById('start-screen').style.display = 'none';
-            const frame = document.getElementById('mc-frame');
-            frame.style.display = 'block';
-            
-            // Fokus setzen
-            frame.focus();
-            
-            // Kleiner Hack: Sende ein leeres Event an das Fenster, um Interaktion zu registrieren
-            window.dispatchEvent(new Event('resize'));
+        async function init() {
+            try {
+                await discordSdk.ready();
+                startBtn.innerText = "Start Minecraft";
+                statusText.innerText = "Bereit zum Spielen!";
+                
+                startBtn.onclick = () => {
+                    document.getElementById('start-screen').style.display = 'none';
+                    frame.style.display = 'block';
+                    // Source erst hier setzen, um Browser-Blockaden zu umgehen
+                    frame.src = "/minecraft"; 
+                    
+                    // Fokus erzwingen
+                    setTimeout(() => frame.focus(), 500);
+                };
+            } catch (e) {
+                statusText.innerText = "SDK Fehler oder nicht in Discord.";
+                // Fallback für Browser-Test
+                startBtn.innerText = "Trotzdem starten";
+                startBtn.onclick = () => {
+                    document.getElementById('start-screen').style.display = 'none';
+                    frame.style.display = 'block';
+                    frame.src = "/minecraft";
+                };
+            }
         }
 
         function openSupportServer() {
@@ -74,13 +87,11 @@
                 .catch(() => window.open('https://discord.gg/WYSYNVXbNT', '_blank'));
         }
 
-        setupDiscord();
-        
-        // Verhindert, dass der Fokus verloren geht
-        window.addEventListener('blur', () => {
-            if(document.getElementById('mc-frame').style.display === 'block') {
-                setTimeout(() => document.getElementById('mc-frame').focus(), 100);
-            }
+        init();
+
+        // Klick-Fokus Helper
+        window.addEventListener('click', () => {
+            if(frame.style.display === 'block') frame.focus();
         });
     </script>
 </body>
