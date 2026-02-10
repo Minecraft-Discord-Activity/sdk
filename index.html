@@ -2,86 +2,49 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minecraft Discord Activity</title>
     <script src="https://cdn.jsdelivr.net/npm/@discord/embedded-app-sdk@latest/dist/index.js"></script>
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000; font-family: 'Helvetica', Arial, sans-serif; }
+        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000; }
         
-        /* Promotion Overlay */
-        #promo-overlay {
-            position: fixed; top: 15px; left: 50%; transform: translateX(-50%);
-            background: rgba(88, 101, 242, 0.95); padding: 10px 22px; border-radius: 12px;
-            color: white; z-index: 99999; display: flex; align-items: center; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.6); font-size: 14px; border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-
-        .join-link { color: #fff; text-decoration: underline; margin-left: 10px; font-weight: bold; cursor: pointer; background: none; border: none; font-size: 14px; }
-        .giveaway-badge { background: #ffcc00; color: #000; padding: 2px 8px; border-radius: 4px; font-weight: bold; margin-right: 12px; font-size: 11px; text-transform: uppercase; }
-
-        /* Interaction Layer to unlock Hardware (WebGL/Keyboard) */
-        #launcher-screen {
+        /* The invisible trigger layer */
+        #trigger {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #18191c; z-index: 99998; display: flex; flex-direction: column;
-            justify-content: center; align-items: center; color: white;
+            z-index: 999; cursor: pointer;
         }
 
-        .start-btn { 
-            background: #5865F2; border: none; padding: 18px 45px; color: white; 
-            font-size: 22px; border-radius: 8px; cursor: pointer; font-weight: bold;
-            transition: background 0.2s;
-        }
-        .start-btn:hover { background: #4752c4; }
-
-        iframe { width: 100%; height: 100%; border: none; display: none; }
+        iframe { width: 100%; height: 100%; border: none; }
     </style>
 </head>
 <body>
 
-    <div id="promo-overlay">
-        <span class="giveaway-badge">50x Giveaway</span>
-        Join for Updates & Win! 
-        <button class="join-link" onclick="openSupportServer()">Join Support Server</button>
-    </div>
+    <div id="trigger" onclick="unlock()"></div>
 
-    <div id="launcher-screen" onclick="launchGame()">
-        <button class="start-btn">START GAME</button>
-        <p style="margin-top: 20px; color: #b9bbbe;">Click to enable Keyboard & Graphics</p>
-    </div>
-
-    <iframe id="game-frame" 
+    <iframe id="game" 
         src="https://classic.minecraft.net" 
-        allow="autoplay; keyboard-lock; pointer-lock; gamepad; fullscreen" 
-        allowfullscreen>
+        allow="autoplay; keyboard-lock; pointer-lock; gamepad; fullscreen">
     </iframe>
 
     <script>
         const discordSdk = new window.discordSdk.DiscordSDK("1437203189651865643");
-
+        
         async function init() {
-            try {
-                await discordSdk.ready();
-                console.log("Discord SDK is ready");
-            } catch (e) {
-                console.error("Discord SDK failed to initialize", e);
-            }
+            try { await discordSdk.ready(); } catch(e) {}
         }
 
-        function launchGame() {
-            const frame = document.getElementById('game-frame');
-            document.getElementById('launcher-screen').style.display = 'none';
-            frame.style.display = 'block';
+        function unlock() {
+            const frame = document.getElementById('game');
+            const layer = document.getElementById('trigger');
             
-            // Critical: Forced focus to eliminate "Requires Keyboard" message
-            setTimeout(() => {
-                frame.focus();
-            }, 150);
-        }
-
-        function openSupportServer() {
-            const inviteUrl = 'https://discord.gg/WYSYNVXbNT';
-            discordSdk.commands.openExternalLink({ url: inviteUrl })
-                .catch(() => window.open(inviteUrl, '_blank'));
+            // Remove the invisible layer so user can interact with the game
+            layer.style.display = 'none';
+            
+            // Force focus to remove "Requires Keyboard" error
+            frame.focus();
+            
+            // Reload src once with permissions if necessary
+            if (!frame.src.includes('classic')) {
+                frame.src = "https://classic.minecraft.net";
+            }
         }
 
         init();
