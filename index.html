@@ -1,31 +1,37 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Global Minecraft Activity</title>
+    <title>Minecraft Discord Activity</title>
     <script src="https://cdn.jsdelivr.net/npm/@discord/embedded-app-sdk@latest/dist/index.js"></script>
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000; font-family: 'Helvetica', sans-serif; }
+        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000; font-family: 'Helvetica', Arial, sans-serif; }
         
+        /* Promotion Overlay */
         #promo-overlay {
-            position: absolute; top: 15px; left: 50%; transform: translateX(-50%);
-            background: rgba(88, 101, 242, 0.95); padding: 10px 20px; border-radius: 12px;
-            color: white; z-index: 10001; display: flex; align-items: center; 
+            position: fixed; top: 15px; left: 50%; transform: translateX(-50%);
+            background: rgba(88, 101, 242, 0.95); padding: 10px 22px; border-radius: 12px;
+            color: white; z-index: 99999; display: flex; align-items: center; 
             box-shadow: 0 4px 15px rgba(0,0,0,0.6); font-size: 14px; border: 1px solid rgba(255, 255, 255, 0.3);
         }
 
-        .join-link { color: #fff; text-decoration: underline; margin-left: 10px; font-weight: bold; cursor: pointer; background: none; border: none; padding: 0; font-size: 14px; }
+        .join-link { color: #fff; text-decoration: underline; margin-left: 10px; font-weight: bold; cursor: pointer; background: none; border: none; font-size: 14px; }
         .giveaway-badge { background: #ffcc00; color: #000; padding: 2px 8px; border-radius: 4px; font-weight: bold; margin-right: 12px; font-size: 11px; text-transform: uppercase; }
 
-        /* Der Problemlöser-Layer */
-        #unlock-screen {
+        /* Interaction Layer to unlock Hardware (WebGL/Keyboard) */
+        #launcher-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #18191c; z-index: 10000; display: flex; flex-direction: column;
-            justify-content: center; align-items: center; color: white; cursor: pointer;
+            background: #18191c; z-index: 99998; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; color: white;
         }
-        .play-button { background: #5865F2; padding: 16px 32px; border-radius: 8px; font-weight: bold; font-size: 20px; transition: 0.2s; }
-        .play-button:hover { background: #4752c4; transform: scale(1.05); }
+
+        .start-btn { 
+            background: #5865F2; border: none; padding: 18px 45px; color: white; 
+            font-size: 22px; border-radius: 8px; cursor: pointer; font-weight: bold;
+            transition: background 0.2s;
+        }
+        .start-btn:hover { background: #4752c4; }
 
         iframe { width: 100%; height: 100%; border: none; display: none; }
     </style>
@@ -38,14 +44,14 @@
         <button class="join-link" onclick="openSupportServer()">Join Support Server</button>
     </div>
 
-    <div id="unlock-screen" onclick="launchGame()">
-        <div class="play-button">Minecraft Starten</div>
-        <p style="margin-top: 20px; color: #b9bbbe;">Klicke, um Grafik & Tastatur zu aktivieren</p>
+    <div id="launcher-screen" onclick="launchGame()">
+        <button class="start-btn">START GAME</button>
+        <p style="margin-top: 20px; color: #b9bbbe;">Click to enable Keyboard & Graphics</p>
     </div>
 
-    <iframe id="mc-frame" 
-        src="/minecraft" 
-        allow="autoplay; encrypted-media; keyboard-lock; pointer-lock; gamepad; xr-standard" 
+    <iframe id="game-frame" 
+        src="https://classic.minecraft.net" 
+        allow="autoplay; keyboard-lock; pointer-lock; gamepad; fullscreen" 
         allowfullscreen>
     </iframe>
 
@@ -53,36 +59,32 @@
         const discordSdk = new window.discordSdk.DiscordSDK("1437203189651865643");
 
         async function init() {
-            try { await discordSdk.ready(); } catch (e) { console.error(e); }
+            try {
+                await discordSdk.ready();
+                console.log("Discord SDK is ready");
+            } catch (e) {
+                console.error("Discord SDK failed to initialize", e);
+            }
         }
 
         function launchGame() {
-            const frame = document.getElementById('mc-frame');
-            document.getElementById('unlock-screen').style.display = 'none';
+            const frame = document.getElementById('game-frame');
+            document.getElementById('launcher-screen').style.display = 'none';
             frame.style.display = 'block';
             
-            // Fokus erzwingen für Tastatur-Support
-            frame.focus();
-            
-            // Falls die Meldung bleibt: Frame neu laden nach Klick
-            frame.src = "/minecraft";
+            // Critical: Forced focus to eliminate "Requires Keyboard" message
+            setTimeout(() => {
+                frame.focus();
+            }, 150);
         }
 
         function openSupportServer() {
-            discordSdk.commands.openExternalLink({
-                url: 'https://discord.gg/WYSYNVXbNT'
-            }).catch(() => window.open('https://discord.gg/WYSYNVXbNT', '_blank'));
+            const inviteUrl = 'https://discord.gg/WYSYNVXbNT';
+            discordSdk.commands.openExternalLink({ url: inviteUrl })
+                .catch(() => window.open(inviteUrl, '_blank'));
         }
 
         init();
-
-        // Verhindert, dass der Fokus beim Klicken verloren geht
-        window.addEventListener('mousedown', () => {
-            const frame = document.getElementById('mc-frame');
-            if(frame.style.display === 'block') {
-                setTimeout(() => frame.focus(), 10);
-            }
-        });
     </script>
 </body>
 </html>
